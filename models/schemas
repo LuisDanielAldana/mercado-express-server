@@ -1,0 +1,6 @@
+category{
+    name,
+    description,
+    image,
+    parent_category,
+}
