@@ -14,6 +14,8 @@ mongoose.connection.on('open',function(){
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var itemsRouter = require('./routes/items');
+var categoriesRouter = require('./routes/categories');
 
 var app = express();
 
@@ -25,6 +27,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/items', itemsRouter);
+app.use('/categories', categoriesRouter);
 
 
 

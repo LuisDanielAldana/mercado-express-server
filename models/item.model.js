@@ -1,30 +1,6 @@
 const mongoose = require('mongoose');
 const moment = require("moment/moment");
 
-const CategorySchema = new mongoose.Schema(
-    {
-        name: {
-            type: String,
-            required: true,
-            default: ""
-        },
-        description: {
-            type: String,
-            required: true,
-            default: ""
-        },
-        image: {
-            type: String,
-            default: ""
-        },
-        parent_category: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Category",
-            default: ""
-        }
-    }
-)
-
 const ItemSchema = new mongoose.Schema(
     {
         name: {
@@ -41,11 +17,6 @@ const ItemSchema = new mongoose.Schema(
             type: String,
             default: ""
         },
-        item_url: {
-            type: String,
-            required: true,
-            default: ""
-        },
         price: {
             type: Number,
             required: true,
@@ -56,13 +27,13 @@ const ItemSchema = new mongoose.Schema(
             required: true,
             default: 0
         },
-        deleted: {
+        active: {
             type: Boolean,
-            default: false
+            default: true
         },
         categories: {
-            type: [CategorySchema],
-            default: []
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Category"
         }
     }
 )
