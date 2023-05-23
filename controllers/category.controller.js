@@ -11,7 +11,7 @@ async function createCategory(req, res){
             description: description,
             image: image,
             parent: parent
-        })
+        }).save()
         res.status(200).json({
             message: "Category created",
             obj: newCategory
@@ -26,7 +26,7 @@ async function createCategory(req, res){
 
 async function getCategories(req, res){
     try{
-        const categories = await Category.find()
+        const categories = await Category.find({active: true})
         res.status(200).json({
             message: "All categories",
             obj: categories

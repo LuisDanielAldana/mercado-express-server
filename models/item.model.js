@@ -32,8 +32,9 @@ const ItemSchema = new mongoose.Schema(
             default: true
         },
         categories: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Category"
+            type: [mongoose.Schema.Types.ObjectId],
+            ref: "Category",
+            default: []
         }
     }
 )

@@ -3,7 +3,7 @@ const Item = require('../models/item.model').Item;
 async function getItems(req, res) {
     try {
         const lim = req.query.limit
-        const items = await Item.find().limit(lim)
+        const items = await Item.find({active: true}).limit(lim).populate({path:"categories", model:"Category"})
         res.status(200).json({
             message: "All items",
             items: items
@@ -19,7 +19,8 @@ async function getItemById(req, res){
     const _id = req.params.itemId
     try{
         const item = await Item.findOne({
-            _id: _id
+            _id: _id,
+            active: true
         })
         res.status(200).json({
             message: "Item found",
@@ -38,8 +39,9 @@ async function getByCategoryId(req, res){
     const lim = req.query.limit
     try{
         const items = await Item.find(
-            {'categories.id': _id}
-        ).limit(lim)
+            {'categories.id': _id,
+            active: true}
+        ).limit(lim).populate({path:"categories", model:"Category"})
         res.status(200).json({
             message: "All items in category",
             obj: items
@@ -56,7 +58,7 @@ async function searchItems(req, res){
     const search = req.body.search
     var reg = new RegExp(`.*${search}.*`, 'i');
     try{
-       const item = await Item.find({}).or([{ 'name': { $regex: reg }}, { 'description': { $regex: reg }}])
+       const item = await Item.find({active: true}).or([{ 'name': { $regex: reg }}, { 'description': { $regex: reg }}])
         res.status(200).json({
             message: "Item found",
             obj: item
@@ -145,7 +147,7 @@ async function updateItemImage(req, res){
     }
 }
 
-async function deleteItem(req, res){
+async function setInactive(req, res){
     const _id = req.params.itemId
     const deletedItem = await Item.updateOne(
         {_id: _id},
@@ -159,15 +161,109 @@ async function deleteItem(req, res){
 
     } catch (e){
         res.status(400).json({
-            message: "Error deleting item",
+            message: "Error setting item inactive",
             error: e
         })
     }
 }
 
+async function setActive( req, res){
+    const _id = req.params.itemId
+    try{
+        const activeItem = await Item.updateOne(
+            {_id: _id},
+            {active: true}
+        )
+        res.status(200).json({
+            message: "Item set active",
+            obj: activeItem
+        })
+    } catch (e){
+        res.status(400).json({
+            message: "Error setting item active",
+            error: e
+        })
+    }
+}
 
-async function editCategory(req, res) {
-    // aggregate para obtener todos los documentos con la misma categoria y despues editar esos documentos
+async function addCategory(req, res){
+    const _id = req.params.itemId
+    const categoryId = req.body.categoryId
+    try{
+        const item = await Item.findOne({
+            _id: _id
+        })
+        console.log(item)
+        if(item.categories.includes(categoryId)){
+            res.status(400).json({
+                message: "Item already in category",
+                obj: item
+            })
+        } else {
+            const addedCategory = await Item.updateOne(
+                {_id: _id},
+                {$push:
+                        {categories: categoryId}}
+            )
+            res.status(200).json({
+                message: "Category added",
+                obj: addedCategory
+            })
+        }
+    } catch (e){
+        res.status(400).json({
+            message: "Error adding category",
+            error: e
+        })
+    }
+}
+
+async function removeCategory(req, res){
+    const _id = req.params.itemId
+    const categoryId = req.body.categoryId
+    try{
+        const item = await Item.findOne({
+            _id: _id
+        })
+        if(item.categories.includes(categoryId)){
+            const modifiedItem = await Item.updateOne(
+                {_id: _id},
+                {$pullAll: {
+                        categories: [{_id: categoryId}],
+                    }}
+            )
+            res.status(200).json({
+                message: "Category removed from item",
+                obj: modifiedItem
+            })
+        } else {
+            res.status(400).json(({
+                message: "Category not present in item",
+                obj: item
+            }))
+        }
+    } catch (e){
+        res.status(400).json({
+            message: "Error removing category"
+        })
+    }
+}
+
+async function getInactiveItems(req, res){
+    try{
+        const inactiveItems = await Item.find({
+            active: false
+        })
+        res.status(200).json({
+            message: "All inactive Items",
+            obj: inactiveItems
+        })
+    } catch (e){
+        res.status(400).json({
+            message: "Error getting inactive items",
+            error: e
+        })
+    }
 }
 
 module.exports = {
@@ -177,6 +273,10 @@ module.exports = {
     searchItems,
     createItem,
     updateItem,
+    addCategory,
+    removeCategory,
     updateItemImage,
-    deleteItem
+    setInactive,
+    setActive,
+    getInactiveItems
 }
