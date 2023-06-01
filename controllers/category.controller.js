@@ -40,10 +40,10 @@ async function getCategories(req, res){
 }
 
 async function getCategoryById(req, res){
-    const _id = req.params._id
+    const _id = req.params.categoryId
     try{
         const category = await Category.findOne({
-            _id: _id
+            _id
         })
         res.status(200).json({
             message: "Category found",
@@ -61,12 +61,16 @@ async function updateCategory(req, res){
     const _id = req.params.categoryId
     const name = req.body.name
     const description = req.body.description
+    const image = req.body.image
+    const active = req.body.active
     try{
         const updatedCategory = await Category.updateOne(
             {_id: _id},
             {
                 name: name,
-                description: description
+                description: description,
+                image: image,
+                active: active
             }
         )
         res.status(200).json({
@@ -81,52 +85,9 @@ async function updateCategory(req, res){
     }
 }
 
-async function deleteCategory(req, res){
-    const _id = req.params.categoryId
-    try{
-       const deletedCategory = await Category.updateOne(
-           {_id: _id},
-           {active: false}
-       )
-        res.status(200).json({
-            message: "Category deleted",
-            obj: deletedCategory
-        })
-    } catch (e){
-        res.status(400).json({
-            message: "Error deleting category",
-            error: e
-        })
-    }
-}
-
-async function updateCategoryImage(req, res){
-    const _id = req.params.categoryId
-    const image = req.body.image
-    try{
-        const updatedCategory = await Category.updateOne(
-            {_id: _id},
-            {image: image}
-        )
-        res.status(200).json({
-            message: "Image updated",
-            obj: updatedCategory
-        })
-    } catch (e){
-        res.status(400).json({
-            message: "Error updating image",
-            error: e
-        })
-    }
-}
-
-
-
 module.exports = {
     createCategory,
     getCategories,
     getCategoryById,
     updateCategory,
-    updateCategoryImage,
-    deleteCategory
 }

@@ -1,13 +1,22 @@
 const Item = require('../models/item.model').Item;
 
 async function getItems(req, res) {
+    const lim = req.query.limit
+    const search = req.query.search
+    const reg = new RegExp(`.*${search}.*`, 'i');
     try {
-        const lim = req.query.limit
-        const items = await Item.find({active: true}).limit(lim).populate({path:"categories", model:"Category"})
-        res.status(200).json({
-            message: "All items",
-            items: items
-        })
+        if (search){
+            const items = await Item.find({active: true}).or([{ 'name': { $regex: reg }}, { 'description': { $regex: reg }}]).limit(lim).populate({path:"categories", model:"Category"})
+            res.status(200).json({
+                message: "All items",
+                items: items
+            })
+        } else {
+            const items = await Item.find({active: true}).limit(lim).populate({path: "categories", model: "Category"})
+            res.status(200).json({
+                items: items
+            })
+        }
     } catch(e){
         res.status(400).json({
             message: 'Error'
@@ -27,7 +36,7 @@ async function getItemById(req, res){
             obj: item
         })
     } catch (e){
-        res.status(200).json({
+        res.status(400).json({
             message: "Error getting item",
             error: e
         })
@@ -43,7 +52,6 @@ async function getByCategoryId(req, res){
             active: true}
         ).limit(lim).populate({path:"categories", model:"Category"})
         res.status(200).json({
-            message: "All items in category",
             obj: items
         })
     } catch (e){
@@ -54,6 +62,13 @@ async function getByCategoryId(req, res){
     }
 }
 
+/**
+ * busca los items en la base de datos
+ * @param req es el obj request
+ * @param res
+ * @returns {Promise<void>}
+ * @deprecated usar otra cosa
+ */
 async function searchItems(req, res){
     const search = req.body.search
     var reg = new RegExp(`.*${search}.*`, 'i');
@@ -72,7 +87,6 @@ async function searchItems(req, res){
     }
 }
 
-
 async function createItem(req, res){
     const name = req.body.name
     const description = req.body.description
@@ -87,7 +101,7 @@ async function createItem(req, res){
             stock: stock,
             category: category
         }).save();
-        res.status(200).json({
+        res.status(201).json({
             message: "Item created",
             obj: newItem
         })
@@ -105,6 +119,10 @@ async function updateItem(req, res){
     const description = req.body.description
     const price = req.body.price
     const stock = req.body.stock
+    const image = req.body.image
+    const categoryId = req.body.categoryId
+    const active = req.body.active
+    const removeCategoryId = req.body.removeCategoryId
     try {
         const updatedItem = await Item.updateOne(
             {_id:_id},
@@ -112,10 +130,16 @@ async function updateItem(req, res){
                 name: name,
                 description: description,
                 price: price,
-                stock: stock
+                stock: stock,
+                image: image,
+                $push:
+                    {categories: categoryId},
+                active: active,
+                $pullAll:
+                    {categories: [{_id: removeCategoryId}]}
             }
         )
-        res.status(200).json({
+        res.status(201).json({
             message: "Item updated",
             obj: updatedItem
         })
@@ -126,6 +150,14 @@ async function updateItem(req, res){
         })
     }
 }
+
+/**
+ *
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ * @deprecated Included in update item
+ */
 
 async function updateItemImage(req, res){
     const _id = req.params._id
@@ -147,6 +179,13 @@ async function updateItemImage(req, res){
     }
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ * @deprecated Included in update item
+ */
 async function setInactive(req, res){
     const _id = req.params.itemId
     const deletedItem = await Item.updateOne(
@@ -167,6 +206,13 @@ async function setInactive(req, res){
     }
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ * @deprecated Included in update item
+ */
 async function setActive( req, res){
     const _id = req.params.itemId
     try{
@@ -186,6 +232,13 @@ async function setActive( req, res){
     }
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ * @deprecated
+ */
 async function addCategory(req, res){
     const _id = req.params.itemId
     const categoryId = req.body.categoryId
@@ -218,6 +271,13 @@ async function addCategory(req, res){
     }
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ * @deprecated
+ */
 async function removeCategory(req, res){
     const _id = req.params.itemId
     const categoryId = req.body.categoryId
@@ -270,13 +330,7 @@ module.exports = {
     getItems,
     getItemById,
     getByCategoryId,
-    searchItems,
     createItem,
     updateItem,
-    addCategory,
-    removeCategory,
-    updateItemImage,
-    setInactive,
-    setActive,
     getInactiveItems
 }
