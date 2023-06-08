@@ -8,6 +8,7 @@ router.get('/inactive', itemController.getInactiveItems)
 router.get('/:itemId', itemController.getItemById)
 router.post('/', itemController.createItem)
 router.put('/:itemId', itemController.updateItem)
+router.delete('/:itemId', itemController.setInactive)
 
 
 module.exports = router;

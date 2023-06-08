@@ -151,41 +151,6 @@ async function updateItem(req, res){
     }
 }
 
-/**
- *
- * @param req
- * @param res
- * @returns {Promise<void>}
- * @deprecated Included in update item
- */
-
-async function updateItemImage(req, res){
-    const _id = req.params._id
-    const image = req.body.image
-    try{
-        const updatedImage = await Item.updateOne(
-            {_id: _id},
-            {image: image}
-        )
-        res.status(200).json({
-            message: "Image successfully updated",
-            obj: updatedImage
-        })
-    } catch(e){
-        res.status(400).json({
-            message: "Error updating image",
-            error: e
-        })
-    }
-}
-
-/**
- *
- * @param req
- * @param res
- * @returns {Promise<void>}
- * @deprecated Included in update item
- */
 async function setInactive(req, res){
     const _id = req.params.itemId
     const deletedItem = await Item.updateOne(
@@ -332,5 +297,6 @@ module.exports = {
     getByCategoryId,
     createItem,
     updateItem,
-    getInactiveItems
+    getInactiveItems,
+    setInactive
 }
