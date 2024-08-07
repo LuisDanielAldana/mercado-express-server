@@ -15,7 +15,7 @@ const ItemSchema = new mongoose.Schema(
         },
         image: {
             type: String,
-            default: ""
+            default: "https://res.cloudinary.com/dficrwc6r/image/upload/v1686556387/kraftbox_q5bjep.jpg"
         },
         price: {
             type: Number,

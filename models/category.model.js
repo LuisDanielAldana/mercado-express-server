@@ -14,7 +14,7 @@ const CategorySchema = new mongoose.Schema(
         },
         image: {
             type: String,
-            default: ""
+            default: "https://res.cloudinary.com/dficrwc6r/image/upload/v1686556571/51obA2WQ_8L_iieemv.jpg"
         },
         parent: {
             type: mongoose.Schema.Types.ObjectId,
